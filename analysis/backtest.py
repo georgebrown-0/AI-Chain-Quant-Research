@@ -1,9 +1,33 @@
 import pandas as pd
+import numpy as np
 
-def backtest(spread, z_score):
+def half_life(spread):
+    s = spread.dropna()
+    s_lag = s.shift(1).dropna().values
+    s_curr = s.loc[s_lag.index].values
+
+    b, a = np.polyfit(s_lag, s_curr, 1)
+
+    if b<=0 or b>=1:
+        return np.nan
+
+    hl = -np.log(2)/np.log(b)
+    return float(hl)
+
+def z_band_from_hl(spread, HL0 = 20.0, B0 = 2.0, hl_max = 120):
+    hl = half_life(spread)
+    if np.isnan(hl):
+        return hl, B0
+    hl_clamped = min(max(hl, hl_min), hl_max)
+    band = B0 * (hl_clamped / HL0) ** 0.5
+    return hl, float(band)
+
+                      
+    
+
+def backtest(spread, z_score, threshold = 2):
     # Simple backtest based on period when z-score crosses thresholds
     # Adjust threshold values as needed
-    threshold = 2
     long_signal = z_score < -threshold
     short_signal = z_score > threshold
     exit_signal = (z_score > -0.5) & (z_score < 0.5)
@@ -22,17 +46,4 @@ def backtest(spread, z_score):
         pnl.append(position * (spread.iloc[i] - spread.iloc[i-1]))
 
     return pd.Series(pnl, index=spread.index[1:])
-
-def half_life(spread):
-    s = spread.dropna()
-    s_lag = s.shift(1).dropna().values
-    s_curr = s[s_lag.index].values
-
-    b, a = np.polyfit(s_lag, s_curr, 1)
-
-    if b<=0 or b>=1:
-        return np.nan
-
-    hl = -np.log(2)/np.log(b)
-    return float(hl)
     
