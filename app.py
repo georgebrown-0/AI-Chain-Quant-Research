@@ -8,7 +8,7 @@ from analysis.backtest import backtest
 from utilities.plotting import plot_prices, plot_spread_zscore, plot_pnl
 
 st.title("AI Arbitrage Pair Trading Tools")
-st.write("Yuyao Xie - Quant Society")
+st.write("*Quant Society* - **Yuyao Xie**")
 
 st.sidebar.header("Settings")
 # Default tickers for Visa and Mastercard
