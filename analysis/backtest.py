@@ -22,3 +22,17 @@ def backtest(spread, z_score):
         pnl.append(position * (spread.iloc[i] - spread.iloc[i-1]))
 
     return pd.Series(pnl, index=spread.index[1:])
+
+def half_life(spread):
+    s = spread.dropna()
+    s_lag = s.shift(1).dropna().values
+    s_curr = s[s_lag.index].values
+
+    b, a = np.polyfit(s_lag, s_curr, 1)
+
+    if b<=0 or b>=1:
+        return np.nan
+
+    hl = -np.log(2)/np.log(b)
+    return float(hl)
+    
