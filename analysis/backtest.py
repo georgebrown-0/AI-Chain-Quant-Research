@@ -21,7 +21,7 @@ def z_band_from_hl(spread, HL0 = 20.0, B0 = 2.0, hl_max = 120):
     hl = half_life(spread)
     if np.isnan(hl):
         return hl, B0
-    hl_clamped = min(max(hl, hl_min), hl_max)
+    hl_clamped = min(hl, hl_max)
     band = B0 * (hl_clamped / HL0) ** 0.5
     return hl, float(band)
 
