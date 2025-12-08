@@ -3,10 +3,13 @@ import numpy as np
 
 def half_life(spread):
     s = spread.dropna()
-    s_lag = s.shift(1).dropna().values
-    s_curr = s.loc[s_lag.index].values
+    s_lag = s.shift(1).dropna()
+    s_curr = s.loc[s_lag.index]
 
-    b, a = np.polyfit(s_lag, s_curr, 1)
+    x = s_lag.values
+    y = s_curr.values
+
+    b, a = np.polyfit(x, y, 1)
 
     if b<=0 or b>=1:
         return np.nan
