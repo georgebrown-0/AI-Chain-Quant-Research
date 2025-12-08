@@ -28,12 +28,13 @@ def z_band_from_hl(spread, HL0 = 20.0, B0 = 2.0, hl_max = 120):
                       
     
 
-def backtest(spread, z_score, threshold = 2):
+def backtest(spread, z_score, threshold = 2.0, alpha = 0.25):
     # Simple backtest based on period when z-score crosses thresholds
     # Adjust threshold values as needed
+    exit_band = alpha * threshold
     long_signal = z_score < -threshold
     short_signal = z_score > threshold
-    exit_signal = (z_score > -0.5) & (z_score < 0.5)
+    exit_signal = (z_score > -exit_band) & (z_score < exit_band)
     position = 0
     pnl = []
 
