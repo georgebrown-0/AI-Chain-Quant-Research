@@ -4,7 +4,7 @@ from data.downloader import get_price_data
 from analysis.cointegration import run_cointegration_test
 from analysis.hedge_ratio import get_hedge_ratio
 from analysis.spread import compute_spread, zscore
-from analysis.backtest import backtest
+from analysis.backtest import backtest, z_band_from_hl
 from utilities.plotting import plot_prices, plot_spread_zscore, plot_pnl
 
 st.title("AI Arbitrage Pair Trading Tools")
@@ -39,14 +39,26 @@ if run_button:
     spread = compute_spread(y, x, hedge_ratio)
     z_score = zscore(spread)
 
-    st.subheader("Spread & Z-Score")
-    st.plotly_chart(plot_spread_zscore(spread, z_score))
+    hl, dynamic_band = z_band_from_hl(spread)
 
-    pnl = backtest(spread, z_score)
+    st.subheader("Mean-Reversion Speed")
+    st.write(f"Estimated half-life: **{hl:.1f} days**")
+    st.write(f"Dynamic entry band: **±{dynamic_band:.2f} z**")
+
+    st.subheader("Spread & Z-Score")
+    st.plotly_chart(plot_spread_zscore(spread, z_score, entry_z=dynamic_band))
+
+    pnl = backtest(spread, z_score, threshold=dynamic_band)
     st.subheader("Backtest Results")
     st.write("Z-score min:", z_score.min(), "max:", z_score.max())
-    st.write("Number of long signals:", sum(z_score < -2))
-    st.write("Number of short signals:", sum(z_score > 2))
+    st.write(
+        f"Number of long signals (z < -{dynamic_band:.2f}):",
+        sum(z_score < -dynamic_band),
+    )
+    st.write(
+        f"Number of short signals (z > {dynamic_band:.2f}):",
+        sum(z_score > dynamic_band),
+    )
     st.plotly_chart(plot_pnl(pnl))
 
     st.success(f"**Total PnL:** {pnl.sum():.2f}")
